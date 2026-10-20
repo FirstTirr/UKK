@@ -1,0 +1,68 @@
+//login
+http://localhost:5000/api/auth/login //1
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+//crud user
+http://localhost:5000/api/users/read //2
+
+http://localhost:5000/api/users/ //3
+{
+  "username": "petugas1",
+  "password": "password123",
+  "role": "petugas"
+}
+
+http://localhost:5000/api/users/delete/:id //4
+
+
+//crud kategori
+htp://localhost:5t000/api/kategori/read //5
+
+http://localhost:5000/api/kategori //6
+{
+  "nama_kategori": "my bini"
+}
+
+http://localhost:5000/api/kategori/edit/1 //7
+
+http://localhost:5000/api/kategori/delete/1 //8
+{
+  "nama_kategori": "my bini"
+}
+
+//CRUD alat
+http://localhost:5000/api/alat //9
+{
+  "nama_alat": "Multimeter Digital",
+  "id_kategori": 1,
+  "stok": 10,
+  "kondisi": "Baik"
+}
+
+http://localhost:5000/api/alat/read //10
+
+http://localhost:5000/api/alat/edit/1 //11
+{
+  "nama_alat": "Multimeter Digital Sanwa",
+  "id_kategori": 1,
+  "stok": 8,
+  "kondisi": "Baik"
+}
+
+http://localhost:5000/api/alat/delete/1 //12
+
+//CRUD peminjaman
+http://localhost:5000/api/peminjaman //13
+{
+  "id_alat": 1,
+  "tanggal_pinjam": "2026-10-20",
+  "tanggal_kembali": "2026-10-25",
+  "jumlah": 2
+}
+
+http://localhost:5000/api/peminjaman/read //14
+
+http://localhost:5000/api/peminjaman/kembali/:id //15

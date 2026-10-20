@@ -1,0 +1,23 @@
+# Dependensi Node
+node_modules/
+
+# Environment Variables (Data Sensitif)
+.env
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Directory upload (jika nanti ada upload file/gambar)
+uploads/
