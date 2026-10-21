@@ -31,8 +31,28 @@ async function remove(req, res) {
   }
 }
 
+async function updateProfil(req, res) {
+  try {
+    const { no_hp, alamat } = req.body;
+    await userService.updateProfilUser(req.user.id_user, { no_hp, alamat });
+    res.json({ message: 'Nomor HP dan alamat berhasil disimpan' });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+}
+
+async function getProfil(req, res) {
+  try {
+    res.json(await userService.getProfilUser(req.user.id_user));
+  } catch (err) {
+    res.status(404).json({ message: err.message });
+  }
+}
+
 module.exports = {
   getAll,
   create,
-  remove
+  remove,
+  updateProfil,
+  getProfil
 };

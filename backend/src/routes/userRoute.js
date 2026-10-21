@@ -3,6 +3,10 @@ const router = express.Router();
 const userController = require('../controllers/userController');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 
+// Profil milik sendiri (semua role) — didaftarkan sebelum guard admin
+router.get('/profil', verifyToken, userController.getProfil);
+router.put('/profil', verifyToken, userController.updateProfil);
+
 router.use(verifyToken, checkRole(['admin']));
 
 // Read -> /api/users/read

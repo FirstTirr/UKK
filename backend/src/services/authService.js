@@ -19,7 +19,16 @@ async function login(username, password) {
 
   await db.query('INSERT INTO log_aktivitas (id_user, aktivitas) VALUES (?, ?)', [user.id_user, `LOGIN: ${user.username}`]);
 
-  return { token, user: { id_user: user.id_user, username: user.username, role: user.role } };
+  return {
+    token,
+    user: {
+      id_user: user.id_user,
+      username: user.username,
+      role: user.role,
+      no_hp: user.no_hp || null,
+      alamat: user.alamat || null
+    }
+  };
 }
 
 module.exports = { login };

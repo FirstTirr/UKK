@@ -1,3 +1,45 @@
+-- ============================================================
+-- TRIGGER STOK ALAT
+-- Seluruh perubahan stok hanya terjadi di trigger ini; backend
+-- tidak menghitung stok sama sekali.
+--   trg_kurangi_stok_alat    : status -> 'Dipinjam' (alat diserahkan)
+--   trg_kembalikan_stok_alat : status -> 'Selesai'  (alat kembali)
+-- Keduanya JOIN ke detail_peminjaman, jadi satu transaksi yang
+-- memuat beberapa alat tetap memotong/mengembalikan seluruh stoknya.
+-- ============================================================
+
+DELIMITER //
+
+CREATE TRIGGER trg_kurangi_stok_alat
+AFTER UPDATE ON peminjaman
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'Dipinjam' AND OLD.status != 'Dipinjam' THEN
+        UPDATE alat a
+        JOIN detail_peminjaman dp ON a.id_alat = dp.id_alat
+        SET a.stok = a.stok - dp.jumlah
+        WHERE dp.id_peminjaman = NEW.id_peminjaman;
+    END IF;
+END //
+
+CREATE TRIGGER trg_kembalikan_stok_alat
+AFTER UPDATE ON peminjaman
+FOR EACH ROW
+BEGIN
+    IF NEW.status = 'Selesai' AND OLD.status != 'Selesai' THEN
+        UPDATE alat a
+        JOIN detail_peminjaman dp ON a.id_alat = dp.id_alat
+        SET a.stok = a.stok + dp.jumlah
+        WHERE dp.id_peminjaman = NEW.id_peminjaman;
+    END IF;
+END //
+
+DELIMITER ;
+
+-- ============================================================
+-- Prosedur pengembalian (menghitung denda keterlambatan)
+-- ============================================================
+
 DELIMITER //
 
 CREATE PROCEDURE sp_kembalikan_alat(

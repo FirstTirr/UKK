@@ -8,6 +8,8 @@ CREATE TABLE user (
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin', 'petugas', 'peminjam') NOT NULL,
+    no_hp VARCHAR(20) NULL,            -- wajib diisi peminjam sebelum memesan
+    alamat VARCHAR(255) NULL,          -- tujuan pengantaran alat
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
@@ -31,6 +33,9 @@ CREATE TABLE alat (
 ) ENGINE=InnoDB;
 
 -- 5. Tabel peminjaman (Header Transaksi)
+-- Alur status: Menunggu -> Disetujui (petugas) -> Dipinjam (alat diserahkan) -> Selesai
+--              Menunggu/Disetujui -> Ditolak (pengajuan dibatalkan)
+-- Stok alat dipotong trigger saat 'Dipinjam' dan dikembalikan saat 'Selesai'.
 CREATE TABLE peminjaman (
     id_peminjaman INT AUTO_INCREMENT PRIMARY KEY,
     id_user INT NOT NULL,
