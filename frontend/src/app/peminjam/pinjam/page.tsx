@@ -50,12 +50,9 @@ export default function PeminjamPinjamPage() {
       .then((res) => setProfil({ no_hp: res.no_hp || '', alamat: res.alamat || '' }))
       .catch((err) => setError(err instanceof Error ? err.message : 'Gagal memuat profil Anda.'));
 
-  useEffect(() => {
-    muatAlat();
-    muatProfil();
-  }, []);
+  useEffect(() => { muatAlat(); muatProfil(); }, []);
 
-  // Isi otomatis tanggal kembali saat tanggal pinjam pertama kali dipilih
+  // Tanggal kembali terisi otomatis saat tanggal pinjam dipilih
   const ubahTanggalPinjam = (nilai: string) =>
     setTanggal((prev) => ({
       tgl_pinjam: nilai,
@@ -87,9 +84,7 @@ export default function PeminjamPinjamPage() {
   const unitDipilih = keranjang.reduce((jumlah, item) => jumlah + item.jumlah, 0);
 
   const profilLengkap = Boolean(profil.no_hp.trim() && profil.alamat.trim());
-  const tanggalSalah = Boolean(
-    tanggal.tgl_pinjam && tanggal.tgl_rencana_kembali && tanggal.tgl_rencana_kembali <= tanggal.tgl_pinjam
-  );
+  const tanggalSalah = Boolean(tanggal.tgl_pinjam && tanggal.tgl_rencana_kembali && tanggal.tgl_rencana_kembali <= tanggal.tgl_pinjam);
   const siapKirim = keranjang.length > 0 && profilLengkap && hari >= 1 && !tanggalSalah;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,8 +107,6 @@ export default function PeminjamPinjamPage() {
 
       setSukses(res.message || 'Peminjaman berhasil dicatat, tunggu validasi petugas.');
       setKeranjang([]);
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      localStorage.setItem('user', JSON.stringify({ ...user, ...profil }));
       muatAlat();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal mengirim pengajuan.');
