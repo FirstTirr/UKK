@@ -6,6 +6,8 @@ import { peminjamanService } from '@/services/peminjaman';
 export default function AdminDashboard() {
   const [listPeminjaman, setListPeminjaman] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchPeminjaman = async () => {
     try {
@@ -25,6 +27,17 @@ export default function AdminDashboard() {
   const totalPinjam = listPeminjaman.length;
   const pendingCount = listPeminjaman.filter((i) => i.status === 'Menunggu' || i.status === 'Pending').length;
   const approvedCount = listPeminjaman.filter((i) => i.status === 'Disetujui' || i.status === 'Dipinjam').length;
+
+  // Pagination Logic
+  const totalPages = Math.ceil(totalPinjam / itemsPerPage) || 1;
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = listPeminjaman.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
 
   return (
     <div className="space-y-8 pb-10">
@@ -62,9 +75,16 @@ export default function AdminDashboard() {
 
       {/* Monitoring Table */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-slate-100">
-          <h2 className="text-base font-bold text-slate-900">Riwayat & Status Peminjaman</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Daftar transaksi peminjaman oleh peminjam.</p>
+        <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Riwayat & Status Peminjaman</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Daftar transaksi peminjaman oleh peminjam.</p>
+          </div>
+          {totalPinjam > 0 && (
+            <span className="text-xs font-medium text-slate-500 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200">
+              Menampilkan {startIndex + 1} - {Math.min(startIndex + itemsPerPage, totalPinjam)} dari {totalPinjam} data
+            </span>
+          )}
         </div>
 
         <div className="overflow-x-auto">
@@ -80,11 +100,14 @@ export default function AdminDashboard() {
             <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
               {loading ? (
                 <tr><td colSpan={4} className="p-8 text-center text-slate-400">Memuat data...</td></tr>
-              ) : listPeminjaman.length === 0 ? (
+              ) : paginatedData.length === 0 ? (
                 <tr><td colSpan={4} className="p-8 text-center text-slate-400">Belum ada transaksi peminjaman.</td></tr>
               ) : (
-                listPeminjaman.map((item) => (
-                  <tr key={item.id_peminjaman} className="hover:bg-slate-50/80 transition-colors">
+                paginatedData.map((item, index) => (
+                  <tr 
+                    key={item.id_peminjaman ? `${item.id_peminjaman}-${index}` : index} 
+                    className="hover:bg-slate-50/80 transition-colors"
+                  >
                     <td className="p-4 pl-6 font-medium text-slate-900">{item.nama_user || item.username || item.user?.nama_user || '-'}</td>
                     <td className="p-4 text-slate-700">{item.nama_alat || item.alat?.nama_alat || '-'}</td>
                     <td className="p-4 text-xs text-slate-500">{item.tgl_pinjam ? new Date(item.tgl_pinjam).toLocaleDateString('id-ID') : '-'}</td>
@@ -107,6 +130,31 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {!loading && totalPinjam > 0 && (
+          <div className="p-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500 bg-slate-50/50">
+            <span>
+              Halaman <strong>{currentPage}</strong> dari <strong>{totalPages}</strong>
+            </span>
+            <div className="flex gap-1.5">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-medium hover:bg-slate-100 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              >
+                Sebelumnya
+              </button>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-medium hover:bg-slate-100 hover:text-slate-900 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer"
+              >
+                Selanjutnya
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

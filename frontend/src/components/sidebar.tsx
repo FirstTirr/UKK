@@ -52,10 +52,10 @@ const SidebarContent = ({
   const navItems = menuByRole[role] || [];
 
   return (
-    <div className="flex flex-col h-full justify-between p-6 font-sans select-none">
-      <div>
-        {/* Header Sidebar - Ditambah margin bottom */}
-        <div className="flex items-center justify-between px-2 pb-6 border-b border-slate-100">
+    <div className="flex flex-col h-full justify-between p-6 font-sans select-none overflow-hidden">
+      <div className="flex flex-col min-h-0 flex-1">
+        {/* Header Sidebar - Fixed Top */}
+        <div className="flex items-center justify-between px-2 pb-6 border-b border-slate-100 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-blue-500/20 shrink-0">
               IC
@@ -82,8 +82,8 @@ const SidebarContent = ({
           )}
         </div>
 
-        {/* Navigasi Utama - Ditambah pt-6 biar posisi menu turun & proporsional */}
-        <nav className="space-y-1.5 pt-9">
+        {/* Navigasi Utama - Memiliki internal scroll tersendiri jika menu sangat banyak */}
+        <nav className="space-y-1.5 pt-6 overflow-y-auto flex-1 pr-1 custom-scrollbar">
           <p className="px-3 text-[11px] font-bold text-slate-400 tracking-widest uppercase mb-3">
             Menu Utama
           </p>
@@ -110,8 +110,8 @@ const SidebarContent = ({
         </nav>
       </div>
 
-      {/* Profile & Logout Section */}
-      <div className="border-t border-slate-200 pt-4 flex items-center justify-between">
+      {/* Profile & Logout Section - Fixed Bottom */}
+      <div className="border-t border-slate-200 pt-4 mt-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="w-10 h-10 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center font-black text-sm text-blue-600 shrink-0">
             {userData.initials}
@@ -193,11 +193,11 @@ export default function Sidebar({
   };
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 flex text-slate-800 antialiased tracking-tight relative overflow-hidden">
-      {/* Sidebar Desktop */}
+    <div className="h-screen w-full bg-slate-50 flex text-slate-800 antialiased tracking-tight relative overflow-hidden">
+      {/* Sidebar Desktop - Fixed Screen Height & Overflow Hidden */}
       <aside
-        className={`hidden lg:block bg-white border-r border-slate-200 shrink-0 h-screen sticky top-0 transition-all duration-300 ease-in-out ${
-          isSidebarOpen ? 'w-72 opacity-100' : 'w-0 opacity-0 overflow-hidden border-none'
+        className={`hidden lg:block bg-white border-r border-slate-200 shrink-0 h-screen sticky top-0 overflow-hidden transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? 'w-72 opacity-100' : 'w-0 opacity-0 border-none'
         }`}
       >
         <div className="w-72 h-full">
@@ -205,7 +205,7 @@ export default function Sidebar({
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen relative">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto relative">
         {/* Tombol Buka Sidebar Desktop */}
         {!isSidebarOpen && (
           <button
@@ -219,7 +219,7 @@ export default function Sidebar({
         )}
 
         {/* Header Mobile */}
-        <header className="lg:hidden w-full bg-white border-b border-slate-200 px-5 py-4 flex justify-between items-center sticky top-0 z-40 shadow-sm">
+        <header className="lg:hidden w-full bg-white border-b border-slate-200 px-5 py-4 flex justify-between items-center sticky top-0 z-40 shadow-sm shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-sm">
               IC
@@ -261,7 +261,7 @@ export default function Sidebar({
           </div>
         )}
 
-        {/* Main Content Area */}
+        {/* Main Content Area - Memiliki Scroll Area Sendiri */}
         <main className="flex-1 p-5 sm:p-8 md:p-10 max-w-[1400px] w-full mx-auto">
           {children}
         </main>
