@@ -2,6 +2,18 @@ const userModel = require('../models/userModel');
 const db = require('../config/db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
+
+async function verifyCaptcha(captchaToken) {
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('RECAPTCHA_SECRET_KEY belum dikonfigurasi di server');
+  }
+
+  const url = `https://www.google.com/recaptcha/api/siteverify?secret=${secretKey}&response=${captchaToken}`;
+  const response = await axios.post(url);
+  return response.data.success;
+}
 
 async function login(username, password) {
   const users = await userModel.findByUsername(username);
@@ -31,4 +43,47 @@ async function login(username, password) {
   };
 }
 
-module.exports = { login };
+async function register({ nama_user, username, password, captchaToken }) {
+  const isCaptchaValid = await verifyCaptcha(captchaToken);
+  if (!isCaptchaValid) {
+    throw new Error('Verifikasi CAPTCHA gagal atau kedaluwarsa');
+  }
+
+  const existingUsers = await userModel.findByUsername(username);
+  if (existingUsers.length > 0) {
+    throw new Error('Username sudah digunakan, silakan pilih username lain');
+  }
+
+  const saltRounds = 10;
+  const passwordHash = await bcrypt.hash(password, saltRounds);
+
+  const result = await db.query(
+    'INSERT INTO user (nama_user, username, password_hash, role) VALUES (?, ?, ?, ?)',
+    [nama_user, username, passwordHash, 'peminjam']
+  );
+
+  const rawId = result.insertId || (result[0] && result[0].insertId);
+  const newUserId = rawId ? Number(rawId) : null;
+
+  if (newUserId) {
+    await db.query(
+      'INSERT INTO log_aktivitas (id_user, aktivitas) VALUES (?, ?)',
+      [newUserId, `REGISTER: ${username} (Peminjam)`]
+    );
+  }
+
+  return {
+    success: true,
+    user: {
+      id_user: newUserId,
+      nama_user,
+      username,
+      role: 'peminjam'
+    }
+  };
+}
+
+module.exports = { 
+  login, 
+  register 
+};

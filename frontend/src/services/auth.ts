@@ -8,16 +8,21 @@ export const authService = {
     });
 
     if (data?.token) {
-      // Set cookie token untuk middleware & apiFetch
       document.cookie = `token=${data.token}; path=/; max-age=86400; SameSite=Lax`;
       
-      // Simpan user info
       if (data.user) {
         localStorage.setItem('user', JSON.stringify(data.user));
       }
     }
 
     return data;
+  },
+
+  register: async (userData: { nama_user: string; username: string; password: string; captchaToken: string }) => {
+    return await apiFetch<{ message: string }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
   },
 
   logout: () => {

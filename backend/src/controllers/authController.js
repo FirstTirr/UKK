@@ -13,4 +13,17 @@ async function login(req, res) {
   }
 }
 
-module.exports = { login };
+async function register(req, res) {
+  try {
+    const { nama_user, username, password, captchaToken } = req.body;
+    const result = await authService.register({ nama_user, username, password, captchaToken });
+    res.status(201).json({ message: 'Registrasi berhasil', ...result });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+}
+
+module.exports = { 
+  login, 
+  register 
+};

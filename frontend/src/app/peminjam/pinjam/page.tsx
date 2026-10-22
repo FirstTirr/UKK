@@ -168,6 +168,15 @@ export default function PeminjamPinjamPage() {
             </div>
           </div>
 
+          <div>
+            <PilihAlatPanel
+            alatList={alatList}
+            keranjang={keranjang}
+            onTambah={tambahKeKeranjang}
+            onHapus={(id) => setKeranjang((prev) => prev.filter((item) => item.id_alat !== id))}
+          />
+          </div>
+
           {/* Tanggal peminjaman */}
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h2 className="text-base font-bold text-slate-900">Tanggal Peminjaman</h2>
@@ -198,12 +207,6 @@ export default function PeminjamPinjamPage() {
             </div>
           </div>
 
-          <PilihAlatPanel
-            alatList={alatList}
-            keranjang={keranjang}
-            onTambah={tambahKeKeranjang}
-            onHapus={(id) => setKeranjang((prev) => prev.filter((item) => item.id_alat !== id))}
-          />
         </div>
 
         {/* Ringkasan */}
