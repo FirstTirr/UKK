@@ -1,5 +1,6 @@
 const userModel = require('../models/userModel');
 const db = require('../config/db');
+const logAktivitasService = require('./logAktivitasService');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
@@ -15,7 +16,7 @@ async function verifyCaptcha(captchaToken) {
   return response.data.success;
 }
 
-async function login(username, password) {
+async function login(username, password, ip = null) {
   const users = await userModel.findByUsername(username);
   if (users.length === 0) throw new Error('Username atau password salah');
 
@@ -29,7 +30,7 @@ async function login(username, password) {
     { expiresIn: '1d' }
   );
 
-  await db.query('INSERT INTO log_aktivitas (id_user, aktivitas) VALUES (?, ?)', [user.id_user, `LOGIN: ${user.username}`]);
+  await logAktivitasService.catatAktivitas(user.id_user, `LOGIN: ${user.username}`, ip);
 
   return {
     token,
@@ -43,7 +44,7 @@ async function login(username, password) {
   };
 }
 
-async function register({ nama_user, username, password, captchaToken }) {
+async function register({ nama_user, username, password, captchaToken }, ip = null) {
   const isCaptchaValid = await verifyCaptcha(captchaToken);
   if (!isCaptchaValid) {
     throw new Error('Verifikasi CAPTCHA gagal atau kedaluwarsa');
@@ -66,10 +67,7 @@ async function register({ nama_user, username, password, captchaToken }) {
   const newUserId = rawId ? Number(rawId) : null;
 
   if (newUserId) {
-    await db.query(
-      'INSERT INTO log_aktivitas (id_user, aktivitas) VALUES (?, ?)',
-      [newUserId, `REGISTER: ${username} (Peminjam)`]
-    );
+    await logAktivitasService.catatAktivitas(newUserId, `REGISTER: ${username} (Peminjam)`, ip);
   }
 
   return {

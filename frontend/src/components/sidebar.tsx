@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, Package, FolderTree, Users, 
   CheckCircle2, RotateCcw, PlusCircle, History,
-  Handshake, Menu, X, LogOut, PanelLeftClose, PanelRightClose 
+  Handshake, Menu, X, LogOut, PanelLeftClose, PanelRightClose, ScrollText 
 } from 'lucide-react';
 
 interface SidebarContentProps {
@@ -35,6 +35,7 @@ const SidebarContent = ({
       { label: 'Data Alat', href: '/admin/alat', icon: Package },
       { label: 'Data Kategori', href: '/admin/kategori', icon: FolderTree },
       { label: 'Data User', href: '/admin/user', icon: Users },
+      { label: 'Log Aktivitas', href: '/admin/log-aktivitas', icon: ScrollText },
     ],
     petugas: [
       { label: 'Dashboard Overview', href: '/petugas/dashboard', icon: LayoutDashboard },

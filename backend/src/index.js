@@ -23,6 +23,7 @@ apiRouter.use('/kategori', kategoriRoutes);
 apiRouter.use('/alat', require('./routes/alatRoute'));
 apiRouter.use('/peminjaman', require('./routes/peminjamanRoute'));
 apiRouter.use('/pengembalian', require('./routes/pengembalianRoute'));
+apiRouter.use('/log-aktivitas', require('./routes/logAktivitasRoute'));
 
 // 3. Pasang apiRouter ke app dengan prefix '/api'
 app.use('/api', apiRouter);

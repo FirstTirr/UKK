@@ -4,6 +4,10 @@ async function getAllKategori() {
   return await kategoriModel.getAll();
 }
 
+async function getKategoriById(id) {
+  return await kategoriModel.getById(id);
+}
+
 async function createKategori(nama_kategori) {
   return await kategoriModel.create(nama_kategori);
 }
@@ -18,6 +22,7 @@ async function deleteKategori(id) {
 
 module.exports = {
   getAllKategori,
+  getKategoriById,
   createKategori,
   updateKategori,
   deleteKategori

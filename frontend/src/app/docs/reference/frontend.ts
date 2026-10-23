@@ -110,6 +110,16 @@ export const feServices: ModuleDoc[] = [
     ],
   },
   {
+    id: "fe-log-aktivitas-service",
+    file: "frontend/src/services/logAktivitas.ts",
+    title: "logAktivitasService",
+    desc: "Pembungkus endpoint log aktivitas (hanya dipanggil halaman /admin/log-aktivitas).",
+    constants: [
+      { name: "LogAktivitas", type: "interface", note: "{ id_log_aktivitas, id_user, aktivitas, ip_address, created_at, username, role }." },
+    ],
+    functions: [{ name: "getAll", signature: "getAll() => Promise<LogAktivitas[]>", summary: "GET /log-aktivitas/read (admin)." }],
+  },
+  {
     id: "fe-peminjaman-service",
     file: "frontend/src/services/peminjaman.ts",
     title: "peminjamanService",
@@ -162,7 +172,7 @@ export const components: ComponentDoc[] = [
     ],
     details: [
       "State: isMobileOpen (drawer), isSidebarOpen (collapse desktop), userData dari localStorage.",
-      "Menu per peran: admin → dashboard/alat/kategori/user; petugas → dashboard/validasi/pengambilan/pengembalian; peminjam → dashboard/pinjam/riwayat.",
+      "Menu per peran: admin → dashboard/alat/kategori/user/log aktivitas; petugas → dashboard/validasi/pengambilan/pengembalian; peminjam → dashboard/pinjam/riwayat.",
       "Item aktif ditandai bila usePathname() === href.",
       "handleLogout: konfirmasi → bersihkan localStorage/sessionStorage/cookie → arahkan ke /auth/login.",
       "Responsif: aside tersembunyi di bawah breakpoint lg, digantikan header + drawer modal.",
@@ -254,6 +264,19 @@ export const pages: PageDoc[] = [
     state: ["list, search, page, modalOpen, editId, form { username, password, role }"],
     api: ["GET /users/read · POST /users · PUT /users/:id · DELETE /users/delete/:id"],
     behaviors: ["Password bersifat opsional saat mode ubah."],
+  },
+  {
+    route: "/admin/log-aktivitas",
+    file: "frontend/src/app/admin/log-aktivitas/page.tsx",
+    role: "admin",
+    summary: "Jejak audit seluruh aksi pengguna: tabel waktu/pengguna/peran/aktivitas/IP dengan pencarian, filter kategori, dan paginasi 10 baris.",
+    state: ["list, loading, error, search, filter, page"],
+    api: ["GET /log-aktivitas/read"],
+    behaviors: [
+      "Kategori (Autentikasi / Data Master / Transaksi) diturunkan dari PREFIX pesan log, bukan dari kolom database.",
+      "Tombol Muat Ulang & banner galat memuat ulang data; baris milik user terhapus tampil sebagai “akun terhapus”.",
+      "Halaman ini hanya dijaga backend (checkRole admin) — role lain menerima 403 dan tabel tampil kosong.",
+    ],
   },
   {
     route: "/petugas/dashboard",

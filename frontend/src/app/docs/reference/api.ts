@@ -112,6 +112,10 @@ export const apiGroups: ApiGroup[] = [
         auth: "admin",
         params: [{ name: "id", type: "number", required: true, note: "id_user." }],
         response: `{ "message": "User berhasil dihapus" }`,
+        notes: [
+          "404 bila :id tidak ditemukan — id dibaca lebih dulu agar log menyimpan username & role, bukan sekadar nomor.",
+          "Baris log milik user ikut terhapus (FK ON DELETE CASCADE).",
+        ],
       },
     ],
   },
@@ -331,6 +335,37 @@ export const apiGroups: ApiGroup[] = [
           "Hanya transaksi berstatus Dipinjam atau Terlambat.",
           "Status menjadi Selesai; stok kembali otomatis lewat trigger.",
           "400 bila sudah pernah dikembalikan atau status tidak sesuai.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "api-log-aktivitas",
+    title: "Log Aktivitas",
+    base: "/api/log-aktivitas",
+    desc: "Jejak audit seluruh aksi pengguna. Tanpa endpoint tulis: log dicatat otomatis oleh controller lain.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/log-aktivitas/read",
+        summary: "Seluruh log aktivitas, terurut terbaru lebih dulu.",
+        auth: "admin",
+        response: `[
+  {
+    "id_log_aktivitas": 10,
+    "id_user": 2,
+    "aktivitas": "HAPUS KATEGORI: Sensor Suhu",
+    "ip_address": "::1",
+    "created_at": "2026-10-23T07:39:55.000Z",
+    "username": "admin",
+    "role": "admin"
+  }
+]`,
+        notes: [
+          "401 bila tanpa token, 403 bila role bukan admin (guard verifyToken + checkRole).",
+          "username & role berasal dari LEFT JOIN tabel user; baris milik user terhapus ikut terhapus (FK CASCADE).",
+          "Pola pesan \"PREFIX: detail\" — LOGIN, REGISTER, TAMBAH/UBAH/HAPUS (data master), AJUAN/VALIDASI/PENGEMBALIAN (transaksi).",
+          "created_at terkirim sebagai string ISO; ip_address boleh NULL.",
         ],
       },
     ],

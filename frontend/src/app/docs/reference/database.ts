@@ -68,10 +68,11 @@ export const dbTables: ModuleDoc[] = [
     { name: "denda", type: "DECIMAL(10,2)" },
     { name: "total_pembayaran", type: "DECIMAL(10,2)" },
   ]),
-  kolom("db-log", "log_aktivitas", "Jejak aktivitas login & registrasi.", [
+  kolom("db-log", "log_aktivitas", "Jejak audit seluruh aksi (login, registrasi, CRUD, transaksi). Hanya admin yang boleh membaca lewat GET /api/log-aktivitas/read.", [
     { name: "id_log_aktivitas", type: "INT PK AI" },
-    { name: "id_user", type: "INT FK (CASCADE)" },
-    { name: "aktivitas", type: "VARCHAR(255)" },
+    { name: "id_user", type: "INT FK → user (CASCADE)" },
+    { name: "aktivitas", type: "VARCHAR(255) · pola 'PREFIX: detail'" },
+    { name: "ip_address", type: "VARCHAR(45) NULL" },
     { name: "created_at", type: "TIMESTAMP" },
   ]),
 ];

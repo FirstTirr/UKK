@@ -76,7 +76,7 @@ export const controllerModules: ModuleDoc[] = [
         summary: "Membuat user baru dari username/password/role.",
         returns: "201 { message } atau 400 bila field wajib kosong.",
       },
-      { name: "remove", signature: "remove(req, res)", summary: "Menghapus user berdasar :id.", returns: "200 { message }." },
+      { name: "remove", signature: "remove(req, res)", summary: "Membaca dulu user (agar log menyimpan nama) lalu menghapus berdasar :id.", returns: "200 { message } atau 404 bila :id tidak ditemukan.", notes: ["Mencatat 'HAPUS USER: <username> (<role>)' ke log aktivitas." ] },
       {
         name: "getProfil",
         signature: "getProfil(req, res)",
@@ -100,7 +100,7 @@ export const controllerModules: ModuleDoc[] = [
       { name: "getAll", signature: "getAll(req, res)", summary: "Daftar kategori.", returns: "200 array." },
       { name: "create", signature: "create(req, res)", summary: "Tambah kategori.", returns: "201 { message } atau 400." },
       { name: "update", signature: "update(req, res)", summary: "Ubah nama kategori :id.", returns: "200 { message } atau 400." },
-      { name: "remove", signature: "remove(req, res)", summary: "Hapus kategori :id.", returns: "200 { message }." },
+      { name: "remove", signature: "remove(req, res)", summary: "Hapus kategori :id.", returns: "200 { message }.", notes: ["Membaca nama kategori lebih dulu agar log berbunyi 'HAPUS KATEGORI: <nama>'."] },
     ],
   },
   {
@@ -113,7 +113,7 @@ export const controllerModules: ModuleDoc[] = [
       { name: "getById", signature: "getById(req, res)", summary: "Detail satu alat.", returns: "200 objek alat atau 404." },
       { name: "create", signature: "create(req, res)", summary: "Tambah alat baru.", returns: "201 { message } atau 400 bila field wajib kosong." },
       { name: "update", signature: "update(req, res)", summary: "Perbarui alat :id.", returns: "200 { message }." },
-      { name: "remove", signature: "remove(req, res)", summary: "Soft delete alat :id.", returns: "200 { message }." },
+      { name: "remove", signature: "remove(req, res)", summary: "Soft delete alat :id.", returns: "200 { message }.", notes: ["Membaca nama alat lebih dulu agar log berbunyi 'HAPUS ALAT: <nama>'."] },
     ],
   },
   {
@@ -166,6 +166,21 @@ export const controllerModules: ModuleDoc[] = [
       },
     ],
   },
+  {
+    id: "be-log-aktivitas-controller",
+    file: "backend/src/controllers/logAktivitasController.js",
+    title: "logAktivitasController",
+    desc: "Titik masuk tunggal pembacaan log aktivitas; penulisan dilakukan lewat logAktivitasService.catatAktivitas di controller lain.",
+    functions: [
+      {
+        name: "getAll",
+        signature: "getAll(req, res)",
+        summary: "Mengembalikan seluruh log beserta username & role pemiliknya, terurut terbaru.",
+        returns: "200 array atau 500 { message }.",
+        notes: ["Akses dibatasi guard di route: verifyToken + checkRole(['admin'])."],
+      },
+    ],
+  },
 ];
 
 export const serviceModules: ModuleDoc[] = [
@@ -185,14 +200,14 @@ export const serviceModules: ModuleDoc[] = [
       },
       {
         name: "login",
-        signature: "login(username, password) => Promise<{ token, user }>",
-        summary: "Membandingkan bcrypt, menerbitkan JWT (berlaku 1 hari), dan mencatat aktivitas.",
+        signature: "login(username, password, ip?) => Promise<{ token, user }>",
+        summary: "Membandingkan bcrypt, menerbitkan JWT (berlaku 1 hari), dan mencatat aktivitas LOGIN beserta IP.",
         returns: "Objek { token, user: { id_user, username, role, no_hp, alamat } }.",
         notes: ["Pesan galat sengaja sama untuk username tak dikenal dan password salah."],
       },
       {
         name: "register",
-        signature: "register({ nama_user, username, password, captchaToken }) => Promise<{ success, user }>",
+        signature: "register({ nama_user, username, password, captchaToken }, ip?) => Promise<{ success, user }>",
         summary: "Memvalidasi CAPTCHA, mengecek keunikan username, lalu membuat akun peminjam.",
         returns: "Objek { success: true, user }.",
         notes: ["Username duplikat → Error 'Username sudah digunakan...' yang dikirim sebagai 400."],
@@ -230,6 +245,7 @@ export const serviceModules: ModuleDoc[] = [
     desc: "Lapisan tipis yang meneruskan operasi CRUD ke kategoriModel.",
     functions: [
       { name: "getAllKategori", signature: "getAllKategori()", summary: "Daftar kategori." },
+      { name: "getKategoriById", signature: "getKategoriById(id)", summary: "Satu kategori atau undefined — dipakai untuk menulis log berisi nama saat hapus." },
       { name: "createKategori", signature: "createKategori(nama_kategori)", summary: "Tambah kategori." },
       { name: "updateKategori", signature: "updateKategori(id, nama_kategori)", summary: "Ubah nama kategori." },
       { name: "deleteKategori", signature: "deleteKategori(id)", summary: "Hapus kategori (cascade ke alat)." },
@@ -306,6 +322,29 @@ export const serviceModules: ModuleDoc[] = [
       },
     ],
   },
+  {
+    id: "be-log-aktivitas-service",
+    file: "backend/src/services/logAktivitasService.js",
+    title: "logAktivitasService",
+    desc: "Satu-satunya penulis log aktivitas; dipanggil dari authController (via authService) dan seluruh controller CRUD/transaksi.",
+    functions: [
+      { name: "getAllLogAktivitas", signature: "getAllLogAktivitas()", summary: "Seluruh log terbaru beserta username & role (LEFT JOIN user)." },
+      {
+        name: "catatAktivitas",
+        signature: "catatAktivitas(id_user, aktivitas, ip_address?) => Promise<void>",
+        summary: "Menulis satu baris log; memangkas prefiks ::ffff: dan membatasi IP ke 45 karakter.",
+        params: [
+          { name: "id_user", type: "number", required: true, note: "Pelaku aksi (dari req.user.id_user)." },
+          { name: "aktivitas", type: "string", required: true, note: "Pola 'PREFIX: detail', mis. 'TAMBAH ALAT: Multimeter'." },
+          { name: "ip_address", type: "string | null", note: "Biasanya req.ip." },
+        ],
+        notes: [
+          "Tidak pernah melempar error: kegagalan mencatat log hanya dicetak ke console sehingga request utama tetap berhasil.",
+          "Diamkan bila id_user atau aktivitas kosong (menjaga integritas FK).",
+        ],
+      },
+    ],
+  },
 ];
 
 export const modelModules: ModuleDoc[] = [
@@ -330,6 +369,7 @@ export const modelModules: ModuleDoc[] = [
     desc: "CRUD polos tabel kategori.",
     functions: [
       { name: "getAll", signature: "getAll()", summary: "SELECT * kategori." },
+      { name: "getById", signature: "getById(id)", summary: "Satu kategori (array 0/1 baris) — untuk pesan log saat hapus." },
       { name: "create", signature: "create(nama_kategori)", summary: "INSERT kategori." },
       { name: "update", signature: "update(id, nama_kategori)", summary: "UPDATE nama kategori." },
       { name: "remove", signature: "remove(id)", summary: "DELETE kategori." },

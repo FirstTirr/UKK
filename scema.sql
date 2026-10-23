@@ -71,10 +71,18 @@ CREATE TABLE pengembalian (
 ) ENGINE=InnoDB;
 
 -- 8. Tabel log_aktivitas
+-- Jejak audit siapa melakukan apa dan kapan. Hanya admin yang boleh membaca
+-- (GET /api/log-aktivitas/read). Aktivitas ditulis dengan pola "PREFIX: detail",
+-- mis. "LOGIN: admin" atau "HAPUS ALAT: #12" sehingga bisa dikelompokkan di UI.
+-- ip_address menangkap asal request (opsional, NULL bila tidak diketahui).
 CREATE TABLE log_aktivitas (
     id_log_aktivitas INT AUTO_INCREMENT PRIMARY KEY,
     id_user INT NOT NULL,
     aktivitas VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_user) REFERENCES user(id_user) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- Untuk database yang sudah terlanjur dibuat tanpa kolom ip_address:
+-- ALTER TABLE log_aktivitas ADD COLUMN ip_address VARCHAR(45) NULL AFTER aktivitas;

@@ -1,4 +1,5 @@
 const peminjamanService = require('../services/peminjamanService');
+const logAktivitasService = require('../services/logAktivitasService');
 
 async function getAll(req, res) {
   try {
@@ -40,12 +41,18 @@ async function create(req, res) {
       });
     }
 
-    await peminjamanService.pinjamAlat({
+    const idPeminjaman = await peminjamanService.pinjamAlat({
       id_user,
       tgl_pinjam,
       tgl_rencana_kembali,
       items: daftar
     });
+
+    await logAktivitasService.catatAktivitas(
+      id_user,
+      `AJUAN PEMINJAMAN #${idPeminjaman}: ${daftar.length} jenis alat`,
+      req.ip
+    );
 
     res.status(201).json({ message: 'Peminjaman berhasil dicatat, menunggu validasi petugas' });
   } catch (err) {
@@ -60,6 +67,12 @@ async function setujui(req, res) {
     const statusBaru = status || 'Disetujui';
 
     await peminjamanService.setujuiPeminjaman(req.params.id, id_petugas, statusBaru);
+
+    await logAktivitasService.catatAktivitas(
+      id_petugas,
+      `VALIDASI PEMINJAMAN #${req.params.id}: ${statusBaru}`,
+      req.ip
+    );
 
     const pesan = {
       Disetujui: 'Peminjaman disetujui dan menunggu pengambilan alat',

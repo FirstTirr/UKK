@@ -10,8 +10,8 @@ export const stack = [
 export const roles = [
   {
     name: "admin",
-    desc: "Kelola data master (alat, kategori, user) dan memantau seluruh transaksi.",
-    pages: "/admin/dashboard · /admin/alat · /admin/kategori · /admin/user",
+    desc: "Kelola data master (alat, kategori, user) dan memantau seluruh transaksi serta jejak aktivitas sistem.",
+    pages: "/admin/dashboard · /admin/alat · /admin/kategori · /admin/user · /admin/log-aktivitas",
   },
   {
     name: "petugas",
@@ -107,5 +107,13 @@ export const gotchas: NoteDoc[] = [
   {
     title: "Login tidak memverifikasi CAPTCHA",
     text: "captchaToken hanya diverifikasi pada registrasi. Rate limiter (5/menit/IP) menjadi pelindung utama endpoint login.",
+  },
+  {
+    title: "Log aktivitas ikut terhapus bersama user-nya",
+    text: "log_aktivitas.id_user memakai ON DELETE CASCADE, jadi menghapus akun ikut menghapus seluruh jejak aktivitas akun tersebut.",
+  },
+  {
+    title: "Database lama butuh ALTER untuk ip_address",
+    text: "Kolom ip_address ditambahkan belakangan. Untuk tabel yang sudah ada jalankan: ALTER TABLE log_aktivitas ADD COLUMN ip_address VARCHAR(45) NULL AFTER aktivitas;",
   },
 ];
